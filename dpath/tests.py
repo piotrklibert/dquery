@@ -39,7 +39,7 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_simple_paths(self):
         for path in self.test_paths:
-            [path, query(path, self.tree).as_json()]
+            print [path, query(path, self.tree).as_json()]
 
 
     def test_simple_compose(self):
