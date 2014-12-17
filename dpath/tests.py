@@ -50,7 +50,7 @@ class TestSequenceFunctions(unittest.TestCase):
         )
 
         self.assertEqual(
-            _selector(self.tree).as_json()
+            _selector(self.tree).as_json(),
             query("**/a/*", self.tree).as_json(),
         )
 
