@@ -43,12 +43,12 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_simple_paths(self):
         for path in self.test_paths:
-            pprint([path, query(path, self.tree).as_json()])
+            [path, query(path, self.tree).as_json()]
 
     def test_simple_compose(self):
         res = compose_selectors(
             select_all_descendants,
-            select_children(lambda x: x.named("a")),
+            select_children(lambda x: x.is_named("a")),
             select_all_children
         )(self.tree).as_json()
 
@@ -56,22 +56,28 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(res, res2)
 
     def test_simple_mapper(self):
-        pprint(
-            compose_selectors(select_all_descendants,
-                              make_mapper(lambda x: x.val if is_leaf(x) else []))
-
-            (self.tree))
+        _mapper = compose_selectors(
+            select_all_descendants,
+            make_mapper(lambda x: x.val if is_leaf(x) else None)
+        )
+        self.assertEquals(len(_mapper(self.tree)), 19)
 
     def test_text_selector(self):
         import json
         selector = compose_selectors(
             select_all_descendants,
-            make_filter(lambda x: x.named("set-cookie")),
+            make_filter(lambda x: x.is_named("set-cookie")),
             select_text
         )
         b = nodify("root", json.load(open("../sample3.json")))
         self.assertEqual(selector(b), query("**/set-cookie/text()", b))
 
+    def test_conditional(self):
+        nodes = query("**[z]", self.tree).as_json()
+        self.assertEquals(len(nodes), 4)
+
+        nodes = query("*[a]", self.tree)
+        self.assertEquals(len(nodes.as_json()), 2)
 
 
 if __name__ == '__main__':
