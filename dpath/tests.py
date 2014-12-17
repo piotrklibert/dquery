@@ -1,9 +1,5 @@
 import unittest
 
-try:
-    from betterprint import pprint
-except ImportError:
-    from pprint import pprint
 
 from dpath import (
     nodify,
@@ -45,15 +41,19 @@ class TestSequenceFunctions(unittest.TestCase):
         for path in self.test_paths:
             [path, query(path, self.tree).as_json()]
 
+
     def test_simple_compose(self):
-        res = compose_selectors(
+        _selector = compose_selectors(
             select_all_descendants,
             select_children(lambda x: x.is_named("a")),
             select_all_children
-        )(self.tree).as_json()
+        )
 
-        res2 = query("**/a/*", self.tree).as_json()
-        self.assertEqual(res, res2)
+        self.assertEqual(
+            _selector(self.tree).as_json()
+            query("**/a/*", self.tree).as_json(),
+        )
+
 
     def test_simple_mapper(self):
         _mapper = compose_selectors(
@@ -62,15 +62,17 @@ class TestSequenceFunctions(unittest.TestCase):
         )
         self.assertEquals(len(_mapper(self.tree)), 19)
 
+
     def test_text_selector(self):
         import json
-        selector = compose_selectors(
+        _selector = compose_selectors(
             select_all_descendants,
             make_filter(lambda x: x.is_named("set-cookie")),
             select_text
         )
         b = nodify("root", json.load(open("../sample3.json")))
-        self.assertEqual(selector(b), query("**/set-cookie/text()", b))
+        self.assertEqual(_selector(b), query("**/set-cookie/text()", b))
+
 
     def test_conditional(self):
         nodes = query("**[z]", self.tree).as_json()
